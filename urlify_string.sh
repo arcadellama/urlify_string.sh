@@ -27,14 +27,34 @@
 # shellcheck disable=SC1001,SC2086
 urlify_string() {
     _string="$1"
+
+    # Disable globbing to make the word-splitting below safe.
     set -f
+
+    # Store the current value of 'IFS' so we
+    # can restore it later.
     old_ifs=$IFS
 
+    ###########################################################
+    # %
+    ###########################################################
+    # Settting '%' to be first to convert, so that it doesn't
+    # get confused by the following conversions.
+
+    _urlify=""
+    IFS=\%
+    set -- $_string
+    while [ "$#" -gt 1 ]; do  # >1 to print the last character
+        _urlify="${_urlify}$(printf '%s%%25' "$1")"
+        shift
+    done
+    _string="${_urlify}${1}"
 
     ###########################################################
     # space
     ###########################################################
     _urlify=""
+    IFS=' '
     set -- $_string
     while [ "$#" -gt 1 ]; do  # >1 to print the last character
         _urlify="${_urlify}$(printf '%s%%20' "$1")"
@@ -62,18 +82,6 @@ urlify_string() {
     set -- $_string
     while [ "$#" -gt 1 ]; do  # >1 to print the last character
         _urlify="${_urlify}$(printf '%s%%24' "$1")"
-        shift
-    done
-    _string="${_urlify}${1}"
-
-    ###########################################################
-    # %
-    ###########################################################
-    _urlify=""
-    IFS=\%
-    set -- $_string
-    while [ "$#" -gt 1 ]; do  # >1 to print the last character
-        _urlify="${_urlify}$(printf '%s%%25' "$1")"
         shift
     done
     _string="${_urlify}${1}"
@@ -342,13 +350,12 @@ urlify_string() {
     done
     _string="${_urlify}${1}"
 
-    ###########################################################
-    ###########################################################
-
-    # cleanup
+    # Restore the original value of IFS
     IFS=$old_ifs
-    set +f
 
-    # return the string
+    # Re-enable globbing. 
+    set +f # 
+
+    # Return the modified string.
     printf '%s\n' "$_string"
 }
