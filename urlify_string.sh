@@ -24,7 +24,7 @@ urlify_string() {
     # "#"
     ###########################################################
     _urlify=""
-    IFS=\'
+    IFS=\#
     set -- $_string
     while [ "$#" -gt 1 ]; do  # >1 to print the last character
         _urlify="${_urlify}$(printf '%s%%23' "$1")"
